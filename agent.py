@@ -54,8 +54,8 @@ class Agent:
 
         env = gym.make("FlappyBird-v0", render_mode="human" if render else None)
 
-        num_states = env.observation_space.shape[0] # input dim
-        num_actions = env.action_space.n # output dim
+        num_states = env.observation_space.shape[0] 
+        num_actions = env.action_space.n 
 
         policy_dqn = DQN(num_states, num_actions).to(device)
 
@@ -64,7 +64,7 @@ class Agent:
             epsilon = self.epsilon_init
 
             target_dqn = DQN(num_states, num_actions).to(device)
-            # copy the wt & bias vals from policy => target
+
             target_dqn.load_state_dict(policy_dqn.state_dict())
 
             steps = 0
@@ -87,11 +87,11 @@ class Agent:
 
             while (not terminated and episode_reward < self.reward_threshold):
                 if is_training and random.random() < epsilon:
-                    action = env.action_space.sample() # explore
+                    action = env.action_space.sample() 
                     action = torch.tensor(action, dtype=torch.long, device=device)
                 else:
                     with torch.no_grad():
-                        action = policy_dqn(state.unsqueeze(dim=0)).squeeze().argmax() # exploit
+                        action = policy_dqn(state.unsqueeze(dim=0)).squeeze().argmax() 
 
                 next_state, reward, terminated, _, _ = env.step(action.item())
                 
@@ -147,25 +147,22 @@ class Agent:
         rewards = torch.stack(rewards)
         terminations = torch.tensor(terminations).float().to(device)
 
-        # calculate target Q-values - if terminations=true => zero
+       
         with torch.no_grad():
             target_q = rewards + (1-terminations) * self.gamma * target_dqn(next_states).max(dim=1)[0]
 
-            
-        # calculate y_pred i.e. Q-value from current policy
         current_q = policy_dqn(states).gather(dim=1, index=actions.unsqueeze(dim=1)).squeeze()
 
-        # compute loss
+        
         loss = self.loss_fn(current_q, target_q)
 
-        # optimize model
+        
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
 
 
 if __name__ == "__main__":
-    # Parse command line inputs
     parser = argparse.ArgumentParser(description='Train or test model.')
     parser.add_argument('hyperparameters', help='')
     parser.add_argument('--train', help='Training mode', action='store_true')
