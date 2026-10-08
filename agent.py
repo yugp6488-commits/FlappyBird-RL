@@ -97,7 +97,7 @@ class Agent:
                 
                 episode_reward += reward
 
-                # create tensors
+                
                 reward = torch.tensor(reward, dtype=torch.float, device=device)
                 next_state = torch.tensor(next_state, dtype=torch.float, device=device)
 
